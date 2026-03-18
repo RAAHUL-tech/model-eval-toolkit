@@ -32,6 +32,12 @@ dependencies = [
   "seaborn>=0.12",
 ]
 
+[project.optional-dependencies]
+test = [
+  "pytest>=7",
+  "coverage[toml]>=7",
+]
+
 [project.urls]
 Homepage = "https://github.com/RAAHUL-tech/model-eval-toolkit"
 Repository = "https://github.com/RAAHUL-tech/model-eval-toolkit"

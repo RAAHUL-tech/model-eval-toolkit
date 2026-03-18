@@ -1,5 +1,5 @@
 from __future__ import annotations
-
+import numpy as np
 from typing import Any, Iterable, Optional
 
 
@@ -23,8 +23,6 @@ def infer_task(
     if y_true is not None and y_pred is not None:
         # Simple heuristic: if y_true looks continuous -> regression
         try:
-            import numpy as np
-
             y_true_arr = np.asarray(list(y_true))
             if y_true_arr.dtype.kind in {"f"}:
                 return "regression"
