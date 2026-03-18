@@ -37,6 +37,9 @@ test = [
   "pytest>=7",
   "coverage[toml]>=7",
 ]
+pdf = [
+  "reportlab>=4",
+]
 
 [project.urls]
 Homepage = "https://github.com/RAAHUL-tech/model-eval-toolkit"

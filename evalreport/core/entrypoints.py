@@ -31,6 +31,13 @@ def generate_report(
 
     task = task.lower()
 
+    # Determine base output directory for this report
+    if output_path:
+        base_dir = Path(output_path).expanduser().resolve().parent
+    else:
+        base_dir = Path("reports").resolve()
+    base_dir.mkdir(parents=True, exist_ok=True)
+
     if task in {"classification", "binary_classification", "multiclass", "multilabel"}:
         report = ClassificationReport(y_true=y_true, y_pred=y_pred, y_prob=y_prob, **kwargs)
     elif task == "regression":
@@ -41,13 +48,23 @@ def generate_report(
             "Currently supported: classification, regression."
         )
 
+    # Make sure downstream plots know where they should live
+    report.output_dir = base_dir
+
     result = report.run_all()
 
+    # Persist report
     if output_path:
         output_path = str(output_path)
         suffix = Path(output_path).suffix.lower()
         fmt = format or suffix.lstrip(".") or "html"
         report.save(output_path, format=fmt)
+    else:
+        # Default to reports/<task>_report.html if user did not specify a path
+        fmt = (format or "html").lower()
+        default_name = f"{task}_report.{fmt}"
+        default_path = base_dir / default_name
+        report.save(str(default_path), format=fmt)
 
     return result
 

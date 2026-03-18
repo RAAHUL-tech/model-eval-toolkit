@@ -15,6 +15,8 @@ def test_classification_report_basic_metrics():
     assert out["metrics"]["accuracy"] == 4 / 6
     assert "f1_macro" in out["metrics"]
     assert out["metrics"]["confusion_matrix"] is not None
+    # Plots dictionary should include at least the confusion matrix figure
+    assert "confusion_matrix" in report.plots
 
 
 def test_generate_report_classification_html_save(tmp_path):

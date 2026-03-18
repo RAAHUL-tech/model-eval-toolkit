@@ -12,6 +12,7 @@ def test_regression_report_basic_metrics():
     assert out["metrics"]["mae"] > 0
     assert "rmse" in out["metrics"]
     assert "r2" in out["metrics"]
+    assert "residual_plot" in report.plots
 
 
 def test_generate_report_regression_json_save(tmp_path):

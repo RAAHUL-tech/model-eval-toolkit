@@ -1,8 +1,13 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
+from pathlib import Path
+from typing import Any, Iterable, List, Optional, Sequence
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import seaborn as sns
 import numpy as np
 from sklearn.metrics import (
     accuracy_score,
@@ -15,6 +20,8 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
     average_precision_score,
+    roc_curve,
+    precision_recall_curve,
 )
 
 from ..core.base_report import BaseReport
@@ -123,8 +130,81 @@ class ClassificationReport(BaseReport):
             self.metrics["confusion_matrix"] = None
 
     def _generate_plots(self) -> None:
-        # Minimal v0.1: metrics-focused. Plotting hooks will be expanded later.
-        self.plots = {}
+        y_true = _as_array(self.y_true)
+        y_pred = _as_array(self.y_pred)
+        if y_true is None or y_pred is None:
+            self.plots = {}
+            return
+
+        root = self.output_dir or Path("reports")
+        plot_dir = root / "evalreport_plots"
+        plot_dir.mkdir(parents=True, exist_ok=True)
+        plots: dict[str, str] = {}
+
+        # Confusion matrix heatmap
+        try:
+            labels = self.labels
+            if labels is None:
+                labels = list(np.unique(np.concatenate([y_true, y_pred])))
+            cm = confusion_matrix(y_true, y_pred, labels=labels)
+            plt.figure(figsize=(4, 3))
+            sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=labels, yticklabels=labels)
+            plt.xlabel("Predicted")
+            plt.ylabel("True")
+            plt.title("Confusion Matrix")
+            path = plot_dir / "classification_confusion_matrix.png"
+            plt.tight_layout()
+            plt.savefig(path)
+            plt.close()
+            plots["confusion_matrix"] = str(path)
+        except Exception:
+            pass
+
+        # ROC and PR curves for binary classification with probabilities
+        y_prob = _as_array(self.y_prob)
+        if y_prob is not None:
+            try:
+                # handle prob input shape
+                if y_prob.ndim == 1:
+                    y_score = y_prob
+                elif y_prob.ndim == 2 and y_prob.shape[1] == 2:
+                    y_score = y_prob[:, 1]
+                else:
+                    y_score = None
+
+                if y_score is not None and len(np.unique(y_true)) == 2:
+                    # ROC
+                    fpr, tpr, _ = roc_curve(y_true, y_score)
+                    plt.figure(figsize=(4, 3))
+                    plt.plot(fpr, tpr, label="ROC curve")
+                    plt.plot([0, 1], [0, 1], "k--", label="Random")
+                    plt.xlabel("False Positive Rate")
+                    plt.ylabel("True Positive Rate")
+                    plt.title("ROC Curve")
+                    plt.legend()
+                    path = plot_dir / "classification_roc_curve.png"
+                    plt.tight_layout()
+                    plt.savefig(path)
+                    plt.close()
+                    plots["roc_curve"] = str(path)
+
+                    # PR curve
+                    prec, rec, _ = precision_recall_curve(y_true, y_score)
+                    plt.figure(figsize=(4, 3))
+                    plt.plot(rec, prec, label="PR curve")
+                    plt.xlabel("Recall")
+                    plt.ylabel("Precision")
+                    plt.title("Precision-Recall Curve")
+                    plt.legend()
+                    path = plot_dir / "classification_pr_curve.png"
+                    plt.tight_layout()
+                    plt.savefig(path)
+                    plt.close()
+                    plots["pr_curve"] = str(path)
+            except Exception:
+                pass
+
+        self.plots = plots
 
     def _generate_insights(self) -> None:
         y_true = _as_array(self.y_true)
@@ -166,4 +246,26 @@ class ClassificationReport(BaseReport):
             pass
 
         self.insights = insights
+
+        # Descriptions for key metrics shown in HTML/PDF
+        self.metric_descriptions.update(
+            {
+                "accuracy": "Overall fraction of correct predictions.",
+                "precision_micro": "Precision aggregated over all classes (micro-average).",
+                "recall_micro": "Recall aggregated over all classes (micro-average).",
+                "f1_micro": "F1 score aggregated over all classes (micro-average).",
+                "precision_macro": "Unweighted mean of per-class precision.",
+                "recall_macro": "Unweighted mean of per-class recall.",
+                "f1_macro": "Unweighted mean of per-class F1 score.",
+                "precision_weighted": "Precision averaged over classes, weighted by support.",
+                "recall_weighted": "Recall averaged over classes, weighted by support.",
+                "f1_weighted": "F1 averaged over classes, weighted by support.",
+                "mcc": "Matthews correlation coefficient; balanced measure even under class imbalance.",
+                "cohen_kappa": "Cohen’s kappa; agreement between predictions and truth beyond chance.",
+                "log_loss": "Logarithmic loss; lower values indicate better calibrated probabilities.",
+                "roc_auc": "Area under the ROC curve; trade-off between TPR and FPR.",
+                "pr_auc": "Area under the precision–recall curve; useful for imbalanced data.",
+                "confusion_matrix": "Counts of predictions vs true labels for each class pair.",
+            }
+        )
 
