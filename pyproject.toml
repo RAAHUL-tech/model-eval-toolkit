@@ -40,6 +40,8 @@ test = [
 pdf = [
   "reportlab>=4",
 ]
+nlp = []
+vision = []
 
 [project.urls]
 Homepage = "https://github.com/RAAHUL-tech/model-eval-toolkit"

@@ -11,12 +11,18 @@ from evalreport import (
     RegressionReport,
     ClusteringReport,
     TimeSeriesReport,
+    TextClassificationReport,
+    TextGenerationReport,
+    SegmentationReport,
+    DetectionReport,
     __version__,
 )
 ```
 
-> **Current supported tasks (v0.1):** **Classification** (binary & multiclass), **regression**, **clustering**, and **time series**.
-> The roadmap includes ranking/recsys, NLP, CV, and multilabel.
+> **Current supported tasks (v0.1):**
+> classification (binary & multiclass), regression, clustering, time series/forecasting,
+> NLP (text classification + text generation), and CV (segmentation + detection).
+> The roadmap includes ranking/recsys and multilabel.
 
 ---
 
@@ -35,6 +41,13 @@ pip install reportlab
 ```
 
 **Requirements:** Python ≥ 3.9, NumPy, pandas, scikit-learn, Matplotlib, Seaborn.
+
+Optional task extras (currently dependency-light for NLP/CV):
+
+```bash
+pip install "model-eval-toolkit[nlp]"
+pip install "model-eval-toolkit[vision]"
+```
 
 ---
 
@@ -55,6 +68,36 @@ summary = generate_report(
 )
 
 print(summary["metrics"]["accuracy"])
+```
+
+NLP + CV examples:
+
+```python
+from evalreport import generate_report
+
+# Text generation
+generate_report(
+    task="text_generation",
+    y_true=["the cat sat on the mat"],
+    y_pred=["the cat sat on mat"],
+    output_path="reports/text_generation.html",
+)
+
+# Image segmentation (binary masks)
+generate_report(
+    task="segmentation",
+    y_true=[[[0, 0], [1, 1]]],
+    y_pred=[[[0, 1], [1, 1]]],
+    output_path="reports/segmentation.html",
+)
+
+# Object detection (per-image list of box dicts)
+generate_report(
+    task="detection",
+    y_true=[[{\"bbox\": [0, 0, 10, 10], \"label\": \"obj\"}]],
+    y_pred=[[{\"bbox\": [1, 1, 9, 9], \"label\": \"obj\", \"score\": 0.9}]],
+    output_path="reports/detection.html",
+)
 ```
 
 - **`task="auto"`** — float targets → regression; integer/string labels → classification.
