@@ -2,8 +2,11 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any, Iterable, Optional
+
 from ..classification.report import ClassificationReport
+from ..clustering.report import ClusteringReport
 from ..regression.report import RegressionReport
+from ..timeseries.report import TimeSeriesReport
 from .task_inference import infer_task
 
 
@@ -42,10 +45,15 @@ def generate_report(
         report = ClassificationReport(y_true=y_true, y_pred=y_pred, y_prob=y_prob, **kwargs)
     elif task == "regression":
         report = RegressionReport(y_true=y_true, y_pred=y_pred, **kwargs)
+    elif task in {"clustering", "cluster"}:
+        # For clustering, y_pred is treated as cluster assignments/labels.
+        report = ClusteringReport(X=X, labels=y_pred, **kwargs)
+    elif task in {"timeseries", "forecasting", "time_series"}:
+        report = TimeSeriesReport(y_true=y_true, y_pred=y_pred, timestamps=timestamps, **kwargs)
     else:
         raise ValueError(
             f"Unsupported task type for v0.1: {task!r}. "
-            "Currently supported: classification, regression."
+            "Currently supported: classification, regression, clustering, timeseries."
         )
 
     # Make sure downstream plots know where they should live

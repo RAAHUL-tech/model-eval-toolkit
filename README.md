@@ -5,10 +5,18 @@
 Import from the **`evalreport`** package:
 
 ```python
-from evalreport import generate_report, ClassificationReport, RegressionReport, __version__
+from evalreport import (
+    generate_report,
+    ClassificationReport,
+    RegressionReport,
+    ClusteringReport,
+    TimeSeriesReport,
+    __version__,
+)
 ```
 
-> **v0.1 scope:** **Classification** (binary & multiclass) and **regression** are fully supported. The roadmap includes clustering, time series, NLP, vision, and ranking.
+> **Current supported tasks (v0.1):** **Classification** (binary & multiclass), **regression**, **clustering**, and **time series**.
+> The roadmap includes ranking/recsys, NLP, CV, and multilabel.
 
 ---
 
@@ -106,6 +114,26 @@ reg.save("reports/regression_report.pdf", format="pdf")  # needs reportlab
 | **Plots** | Residuals vs predicted, predicted vs actual, residual histogram. |
 | **Insights** | Over/under-prediction bias; heavy-tail error hint. |
 | **HTML** | Same rich layout as classification. |
+
+### Clustering
+
+| Area | Details |
+|------|--------|
+| **Inputs** | `X` (feature matrix) and `labels` (cluster assignments) |
+| **Metrics** | Silhouette score, Davies–Bouldin index, Calinski–Harabasz score, cluster sizes |
+| **Plots** | Cluster scatter (PCA) and cluster size distribution |
+| **Insights** | Separability + imbalance hints |
+| **HTML** | Styled metrics/insights plus embedded plot images |
+
+### Time Series / Forecasting
+
+| Area | Details |
+|------|--------|
+| **Inputs** | `y_true`, `y_pred`, and `timestamps` (same length) |
+| **Metrics** | MAE, MSE, RMSE, MAPE, SMAPE, mean forecast error, rolling RMSE summary |
+| **Plots** | Actual vs forecast, residuals over time, rolling RMSE over time |
+| **Insights** | Systematic bias and drift/stability hints via rolling RMSE |
+| **HTML** | Styled metrics/insights plus embedded plot images |
 
 ---
 

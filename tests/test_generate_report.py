@@ -11,17 +11,18 @@ from evalreport import generate_report
 
 def test_unsupported_task_raises():
     with pytest.raises(ValueError, match="Unsupported task"):
-        generate_report(task="clustering", y_true=[0], y_pred=[0], output_path="x.html")
+        generate_report(task="vision", y_true=[0], y_pred=[0], output_path="x.html")
 
 
-def test_auto_timeseries_unsupported_raises(isolated_reports_cwd):
-    with pytest.raises(ValueError, match="Unsupported task"):
-        generate_report(
-            task="auto",
-            y_true=[1.0, 2.0],
-            y_pred=[1.0, 2.0],
-            timestamps=[1, 2],
-        )
+def test_auto_timeseries_supported(isolated_reports_cwd):
+    generate_report(
+        task="auto",
+        y_true=[1.0, 2.0],
+        y_pred=[1.0, 2.0],
+        timestamps=[1, 2],
+    )
+    p = isolated_reports_cwd / "reports" / "timeseries_report.html"
+    assert p.exists()
 
 
 def test_auto_regression(isolated_reports_cwd):
@@ -68,6 +69,36 @@ def test_regression_multiclass_task_name_still_regression(tmp_path):
     out = tmp_path / "r.html"
     generate_report(task="regression", y_true=[1.0, 2.0], y_pred=[1.0, 2.0], output_path=str(out))
     assert out.exists()
+
+
+def test_generate_report_clustering(tmp_path):
+    # Minimal clustering smoke test via generate_report()
+    import numpy as np
+
+    X = np.array([[0.0, 0.0], [0.1, -0.1], [5.0, 5.0], [5.1, 4.9]])
+    labels = [0, 0, 1, 1]
+    out = tmp_path / "clustering.html"
+    generate_report(task="clustering", X=X, y_pred=labels, output_path=str(out))
+    assert out.exists()
+    assert (tmp_path / "evalreport_plots").is_dir()
+
+
+def test_generate_report_timeseries(tmp_path):
+    import numpy as np
+
+    ts = np.arange(8)
+    y_true = np.sin(ts)
+    y_pred = y_true + 0.2
+    out = tmp_path / "ts.html"
+    generate_report(
+        task="timeseries",
+        y_true=y_true,
+        y_pred=y_pred,
+        timestamps=ts,
+        output_path=str(out),
+    )
+    assert out.exists()
+    assert (tmp_path / "evalreport_plots").is_dir()
 
 
 @pytest.mark.parametrize("task_alias", ["binary_classification", "multiclass", "multilabel"])
