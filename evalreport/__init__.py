@@ -8,6 +8,8 @@ from .nlp.text_classification import TextClassificationReport
 from .nlp.text_generation import TextGenerationReport
 from .vision.segmentation import SegmentationReport
 from .vision.detection import DetectionReport
+from .vision.image_classification import ImageClassificationReport
+from .ranking.report import RankingReport
 
 __all__ = [
     "generate_report",
@@ -20,5 +22,7 @@ __all__ = [
     "TextGenerationReport",
     "SegmentationReport",
     "DetectionReport",
+    "ImageClassificationReport",
+    "RankingReport",
 ]
 

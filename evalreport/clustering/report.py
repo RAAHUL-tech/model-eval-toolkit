@@ -70,16 +70,7 @@ class ClusteringReport(BaseReport):
         vals, counts = np.unique(labels, return_counts=True)
         self.metrics["cluster_sizes"] = {str(v): int(c) for v, c in zip(vals, counts)}
 
-        # Human-readable explanations
-        self.metric_descriptions.update(
-            {
-                "silhouette_score": "How well points fit their own cluster vs other clusters (higher is better).",
-                "davies_bouldin_index": "Average similarity between clusters (lower is better).",
-                "calinski_harabasz_score": "Variance ratio criterion (higher suggests clearer separation).",
-                "num_clusters": "Number of unique clusters in the provided assignments.",
-                "cluster_sizes": "Counts per cluster; helps detect cluster imbalance.",
-            }
-        )
+        
 
     def _generate_plots(self) -> None:
         X = _as_2d_array(self.X)
@@ -170,4 +161,14 @@ class ClusteringReport(BaseReport):
                 insights.append("Higher Davies–Bouldin suggests clusters may be less distinct; inspect overlaps.")
 
         self.insights = insights
+        # Human-readable explanations
+        self.metric_descriptions.update(
+            {
+                "silhouette_score": "How well points fit their own cluster vs other clusters (higher is better).",
+                "davies_bouldin_index": "Average similarity between clusters (lower is better).",
+                "calinski_harabasz_score": "Variance ratio criterion (higher suggests clearer separation).",
+                "num_clusters": "Number of unique clusters in the provided assignments.",
+                "cluster_sizes": "Counts per cluster; helps detect cluster imbalance.",
+            }
+        )
 

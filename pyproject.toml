@@ -45,6 +45,7 @@ vision = []
 
 [project.urls]
 Homepage = "https://github.com/RAAHUL-tech/model-eval-toolkit"
+Documentation = "https://github.com/RAAHUL-tech/model-eval-toolkit/tree/main/docs"
 Repository = "https://github.com/RAAHUL-tech/model-eval-toolkit"
 Issues = "https://github.com/RAAHUL-tech/model-eval-toolkit/issues"
 

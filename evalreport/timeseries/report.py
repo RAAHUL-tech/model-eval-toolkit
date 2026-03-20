@@ -90,17 +90,6 @@ class TimeSeriesReport(BaseReport):
             }
         )
 
-        self.metric_descriptions.update(
-            {
-                "mae": "Mean absolute error; average absolute deviation between forecast and truth.",
-                "rmse": "Root mean squared error; penalizes larger errors more.",
-                "mape": "Mean absolute percentage error; undefined if true values are all ~0.",
-                "smape": "Symmetric MAPE; more stable when scaling varies between truth and prediction.",
-                "mean_forecast_error": "Signed average error; indicates systematic over- or under-forecasting.",
-                "rolling_rmse_mean": "Average RMSE across rolling windows (overall stability).",
-                "rolling_rmse_last": "Most recent rolling RMSE (latest stability).",
-            }
-        )
 
         # Store for plotting
         self._cached_ts = ts
@@ -207,4 +196,16 @@ class TimeSeriesReport(BaseReport):
                 insights.append("Recent errors improved vs earlier windows.")
 
         self.insights = insights
+
+        self.metric_descriptions.update(
+            {
+                "mae": "Mean absolute error; average absolute deviation between forecast and truth.",
+                "rmse": "Root mean squared error; penalizes larger errors more.",
+                "mape": "Mean absolute percentage error; undefined if true values are all ~0.",
+                "smape": "Symmetric MAPE; more stable when scaling varies between truth and prediction.",
+                "mean_forecast_error": "Signed average error; indicates systematic over- or under-forecasting.",
+                "rolling_rmse_mean": "Average RMSE across rolling windows (overall stability).",
+                "rolling_rmse_last": "Most recent rolling RMSE (latest stability).",
+            }
+        )
 

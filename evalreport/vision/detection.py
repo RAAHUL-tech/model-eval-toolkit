@@ -236,23 +236,6 @@ class DetectionReport(BaseReport):
             }
         )
 
-        self.metric_descriptions.update(
-            {
-                "precision": "Fraction of predicted boxes that are correct matches (at IoU threshold).",
-                "recall": "Fraction of ground-truth boxes recovered by predictions (at IoU threshold).",
-                "f1": "Harmonic mean of precision and recall (single-threshold).",
-                "mean_matched_iou": "Average IoU among matched true-positive boxes.",
-                "tp": "True positives (matched predictions).",
-                "fp": "False positives (unmatched predictions).",
-                "fn": "False negatives (missed ground-truth boxes).",
-                "iou_threshold": "IoU threshold used to determine a match.",
-                "map_50_95": "COCO-style mAP averaged over IoU thresholds 0.50:0.95.",
-                "map_50": "mAP at IoU=0.50.",
-                "map_75": "mAP at IoU=0.75.",
-                "map_by_iou": "mAP for each IoU threshold (0.50..0.95).",
-                "ap_by_class": "Per-class AP values (by IoU threshold).",
-            }
-        )
 
         self._cached_gt = gt
         self._cached_pr = pr
@@ -355,4 +338,22 @@ class DetectionReport(BaseReport):
         if isinstance(map_, (int, float)) and map_ < 0.2:
             insights.append("Low mAP suggests weak overall detection quality; verify label mapping and score thresholds.")
         self.insights = insights
+
+        self.metric_descriptions.update(
+            {
+                "precision": "Fraction of predicted boxes that are correct matches (at IoU threshold).",
+                "recall": "Fraction of ground-truth boxes recovered by predictions (at IoU threshold).",
+                "f1": "Harmonic mean of precision and recall (single-threshold).",
+                "mean_matched_iou": "Average IoU among matched true-positive boxes.",
+                "tp": "True positives (matched predictions).",
+                "fp": "False positives (unmatched predictions).",
+                "fn": "False negatives (missed ground-truth boxes).",
+                "iou_threshold": "IoU threshold used to determine a match.",
+                "map_50_95": "COCO-style mAP averaged over IoU thresholds 0.50:0.95.",
+                "map_50": "mAP at IoU=0.50.",
+                "map_75": "mAP at IoU=0.75.",
+                "map_by_iou": "mAP for each IoU threshold (0.50..0.95).",
+                "ap_by_class": "Per-class AP values (by IoU threshold).",
+            }
+        )
 

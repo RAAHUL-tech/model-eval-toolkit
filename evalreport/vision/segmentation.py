@@ -74,14 +74,6 @@ class SegmentationReport(BaseReport):
             }
         )
 
-        self.metric_descriptions.update(
-            {
-                "mean_iou": "Intersection over Union (Jaccard) averaged over samples; higher is better.",
-                "mean_dice": "Dice coefficient averaged over samples; higher is better.",
-                "mean_pixel_accuracy": "Fraction of pixels predicted correctly (foreground/background).",
-                "num_samples": "Number of masks evaluated.",
-            }
-        )
 
         self._cached_masks = (yt_b, yp_b)
 
@@ -136,4 +128,13 @@ class SegmentationReport(BaseReport):
             elif iou > 0.7:
                 insights.append("High IoU indicates strong mask overlap and good segmentation quality.")
         self.insights = insights
+
+        self.metric_descriptions.update(
+            {
+                "mean_iou": "Intersection over Union (Jaccard) averaged over samples; higher is better.",
+                "mean_dice": "Dice coefficient averaged over samples; higher is better.",
+                "mean_pixel_accuracy": "Fraction of pixels predicted correctly (foreground/background).",
+                "num_samples": "Number of masks evaluated.",
+            }
+        )
 

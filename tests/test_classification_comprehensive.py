@@ -72,6 +72,8 @@ def test_multiclass_with_probability_matrix():
     # Multiclass ROC AUC may be computed
     if report.metrics.get("roc_auc") is not None:
         assert isinstance(report.metrics["roc_auc"], (int, float))
+    assert "roc_curve_multiclass" in report.plots
+    assert "pr_curve_multiclass" in report.plots
 
 
 def test_string_labels():

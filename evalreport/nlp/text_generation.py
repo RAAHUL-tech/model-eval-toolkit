@@ -145,14 +145,6 @@ class TextGenerationReport(BaseReport):
             }
         )
 
-        self.metric_descriptions.update(
-            {
-                "bleu_like": "N-gram overlap score with brevity penalty (lightweight BLEU-like). Higher is better.",
-                "rouge_l_f1_like": "Sequence overlap based on LCS (lightweight ROUGE-L F1). Higher is better.",
-                "token_jaccard": "Token-set Jaccard overlap between prediction and reference (lexical overlap proxy).",
-                "num_samples": "Number of evaluated reference/prediction pairs.",
-            }
-        )
 
         self._cached_scores = {
             "bleu_like": [bleu],  # corpus-level; keep structure for plots
@@ -198,4 +190,13 @@ class TextGenerationReport(BaseReport):
             insights.append("Very low overlap-based scores; check formatting, tokenization, or reference/prediction alignment.")
 
         self.insights = insights
+
+        self.metric_descriptions.update(
+            {
+                "bleu_like": "N-gram overlap score with brevity penalty (lightweight BLEU-like). Higher is better.",
+                "rouge_l_f1_like": "Sequence overlap based on LCS (lightweight ROUGE-L F1). Higher is better.",
+                "token_jaccard": "Token-set Jaccard overlap between prediction and reference (lexical overlap proxy).",
+                "num_samples": "Number of evaluated reference/prediction pairs.",
+            }
+        )
 

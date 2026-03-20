@@ -160,27 +160,38 @@ class ClassificationReport(BaseReport):
         except Exception:
             pass
 
-        # ROC and PR curves for binary classification with probabilities
+        # ROC and PR curves with probabilities
         y_prob = _as_array(self.y_prob)
         if y_prob is not None:
             try:
-                # handle prob input shape
-                if y_prob.ndim == 1:
-                    y_score = y_prob
-                elif y_prob.ndim == 2 and y_prob.shape[1] == 2:
-                    y_score = y_prob[:, 1]
-                else:
-                    y_score = None
+                y_prob_arr = y_prob
+                n_classes = len(np.unique(y_true))
+                # Determine class ordering for column mapping:
+                # - if `labels` provided, assume columns follow that order
+                # - else assume columns follow sorted unique labels from y_true
+                class_order = list(self.labels) if self.labels is not None else sorted(np.unique(y_true).tolist())
 
-                if y_score is not None and len(np.unique(y_true)) == 2:
+                # handle probability input shape
+                y_score_for_binary = None
+                if y_prob_arr.ndim == 1:
+                    # binary: P(positive class)
+                    y_score_for_binary = y_prob_arr
+                elif y_prob_arr.ndim == 2:
+                    # For binary, accept both (n,2) and (n,) variants.
+                    if n_classes == 2 and y_prob_arr.shape[1] == 2:
+                        # Use column 1 as "positive" by convention
+                        y_score_for_binary = y_prob_arr[:, 1]
+
+                # Binary case ------------------------------------------------
+                if n_classes == 2 and y_score_for_binary is not None:
                     # ROC
-                    fpr, tpr, _ = roc_curve(y_true, y_score)
+                    fpr, tpr, _ = roc_curve(y_true, y_score_for_binary)
                     plt.figure(figsize=(4, 3))
                     plt.plot(fpr, tpr, label="ROC curve")
                     plt.plot([0, 1], [0, 1], "k--", label="Random")
                     plt.xlabel("False Positive Rate")
                     plt.ylabel("True Positive Rate")
-                    plt.title("ROC Curve")
+                    plt.title("ROC Curve (binary)")
                     plt.legend()
                     path = plot_dir / "classification_roc_curve.png"
                     plt.tight_layout()
@@ -188,19 +199,56 @@ class ClassificationReport(BaseReport):
                     plt.close()
                     plots["roc_curve"] = str(path)
 
-                    # PR curve
-                    prec, rec, _ = precision_recall_curve(y_true, y_score)
+                    # PR
+                    prec, rec, _ = precision_recall_curve(y_true, y_score_for_binary)
                     plt.figure(figsize=(4, 3))
                     plt.plot(rec, prec, label="PR curve")
                     plt.xlabel("Recall")
                     plt.ylabel("Precision")
-                    plt.title("Precision-Recall Curve")
+                    plt.title("Precision-Recall Curve (binary)")
                     plt.legend()
                     path = plot_dir / "classification_pr_curve.png"
                     plt.tight_layout()
                     plt.savefig(path)
                     plt.close()
                     plots["pr_curve"] = str(path)
+
+                # Multiclass case ------------------------------------------
+                if n_classes > 2 and y_prob_arr.ndim == 2:
+                    # Only proceed if columns match the class order we will use.
+                    if y_prob_arr.shape[1] == len(class_order):
+                        # One-vs-rest ROC
+                        plt.figure(figsize=(5, 4))
+                        for col_idx, cls in enumerate(class_order):
+                            y_bin = (y_true == cls).astype(int)
+                            fpr, tpr, _ = roc_curve(y_bin, y_prob_arr[:, col_idx])
+                            plt.plot(fpr, tpr, linewidth=2, label=str(cls))
+                        plt.plot([0, 1], [0, 1], "k--", linewidth=1, label="Random")
+                        plt.xlabel("False Positive Rate")
+                        plt.ylabel("True Positive Rate")
+                        plt.title("ROC Curve (multiclass, one-vs-rest)")
+                        plt.legend(title="Class", fontsize=8)
+                        path = plot_dir / "classification_roc_curve_multiclass.png"
+                        plt.tight_layout()
+                        plt.savefig(path)
+                        plt.close()
+                        plots["roc_curve_multiclass"] = str(path)
+
+                        # One-vs-rest PR
+                        plt.figure(figsize=(5, 4))
+                        for col_idx, cls in enumerate(class_order):
+                            y_bin = (y_true == cls).astype(int)
+                            prec, rec, _ = precision_recall_curve(y_bin, y_prob_arr[:, col_idx])
+                            plt.plot(rec, prec, linewidth=2, label=str(cls))
+                        plt.xlabel("Recall")
+                        plt.ylabel("Precision")
+                        plt.title("Precision-Recall Curve (multiclass, one-vs-rest)")
+                        plt.legend(title="Class", fontsize=8)
+                        path = plot_dir / "classification_pr_curve_multiclass.png"
+                        plt.tight_layout()
+                        plt.savefig(path)
+                        plt.close()
+                        plots["pr_curve_multiclass"] = str(path)
             except Exception:
                 pass
 

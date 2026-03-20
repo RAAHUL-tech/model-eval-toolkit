@@ -9,8 +9,10 @@ from ..nlp.text_classification import TextClassificationReport
 from ..nlp.text_generation import TextGenerationReport
 from ..regression.report import RegressionReport
 from ..timeseries.report import TimeSeriesReport
+from ..ranking.report import RankingReport
 from ..vision.detection import DetectionReport
 from ..vision.segmentation import SegmentationReport
+from ..vision.image_classification import ImageClassificationReport
 from .task_inference import infer_task
 
 
@@ -62,10 +64,15 @@ def generate_report(
         report = SegmentationReport(y_true_masks=y_true, y_pred_masks=y_pred, **kwargs)
     elif task in {"detection", "object_detection"}:
         report = DetectionReport(y_true=y_true, y_pred=y_pred, **kwargs)
+    elif task in {"image_classification", "vision_classification"}:
+        report = ImageClassificationReport(y_true=y_true, y_pred=y_pred, y_prob=y_prob, **kwargs)
+    elif task in {"ranking", "recommendation", "recommender"}:
+        # y_true = relevant items per user; y_pred = ranked recommendation lists per user
+        report = RankingReport(relevant=y_true, ranked=y_pred, **kwargs)
     else:
         raise ValueError(
             f"Unsupported task type for v0.1: {task!r}. "
-            "Currently supported: classification, regression, clustering, timeseries, nlp, vision."
+            "Currently supported: classification, regression, clustering, timeseries, nlp, vision, ranking."
         )
 
     # Make sure downstream plots know where they should live

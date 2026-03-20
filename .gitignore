@@ -201,6 +201,10 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local demo / smoke-test outputs
+tmp/reports/
+tmp/.matplotlib/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

@@ -1,6 +1,12 @@
-# model-eval-toolkit
+<p align="center">
+  <img src="https://raw.githubusercontent.com/RAAHUL-tech/model-eval-toolkit/main/docs/images/evalreport-logo.png" alt="Model Eval Toolkit" width="260">
+</p>
+
+# Model Eval Toolkit
 
 **Unified ML evaluation reports** for Python: metrics, plots, auto-insights, and export to **HTML**, **JSON**, **Markdown**, or **PDF**.
+
+Model Eval Toolkit provides a single, task-aware evaluation layer to benchmark model quality consistently across ML domains.
 
 Import from the **`evalreport`** package:
 
@@ -15,14 +21,15 @@ from evalreport import (
     TextGenerationReport,
     SegmentationReport,
     DetectionReport,
+    RankingReport,
     __version__,
 )
 ```
 
 > **Current supported tasks (v0.1):**
 > classification (binary & multiclass), regression, clustering, time series/forecasting,
-> NLP (text classification + text generation), and CV (segmentation + detection).
-> The roadmap includes ranking/recsys and multilabel.
+> NLP (text classification + text generation), CV (segmentation + detection), and **recommendation / ranking**.
+> The roadmap includes multilabel and richer recsys (e.g. session-based, implicit feedback models).
 
 ---
 
@@ -98,6 +105,15 @@ generate_report(
     y_pred=[[{\"bbox\": [1, 1, 9, 9], \"label\": \"obj\", \"score\": 0.9}]],
     output_path="reports/detection.html",
 )
+
+# Recommendation / ranking (one list per user)
+generate_report(
+    task="recommendation",  # or "ranking", "recommender"
+    y_true=[[10, 20], [30]],           # relevant item IDs per user
+    y_pred=[[10, 99, 20, 5], [7, 30]],  # ranked recommendations per user (best first)
+    k_values=(1, 5, 10),               # optional cutoffs for P@K, R@K, NDCG@K, Hit@K
+    output_path="reports/recommendation.html",
+)
 ```
 
 - **`task="auto"`** — float targets → regression; integer/string labels → classification.
@@ -110,7 +126,7 @@ Useful when you want full control (e.g. set `output_dir` before `run_all()` so p
 
 ```python
 from pathlib import Path
-from evalreport import ClassificationReport, RegressionReport
+from evalreport import ClassificationReport, RegressionReport, RankingReport
 
 # Classification (binary or multiclass)
 cls = ClassificationReport(
@@ -129,6 +145,16 @@ reg = RegressionReport(y_true=[1.0, 2.0, 3.0], y_pred=[1.1, 1.9, 3.2])
 reg.output_dir = Path("reports")
 reg.run_all()
 reg.save("reports/regression_report.pdf", format="pdf")  # needs reportlab
+
+# Recommendation / ranking
+rank = RankingReport(
+    relevant=[[1, 2], [3]],
+    ranked=[[1, 4, 5], [3, 1, 2]],
+    k_values=(1, 5, 10),
+)
+rank.output_dir = Path("reports")
+rank.run_all()
+rank.save("reports/ranking_report.html", format="html")
 ```
 
 ---
@@ -178,6 +204,16 @@ reg.save("reports/regression_report.pdf", format="pdf")  # needs reportlab
 | **Insights** | Systematic bias and drift/stability hints via rolling RMSE |
 | **HTML** | Styled metrics/insights plus embedded plot images |
 
+### Recommendation / Ranking
+
+| Area | Details |
+|------|--------|
+| **Inputs** | `relevant`: ground-truth relevant **item IDs** per user (or query). `ranked`: **ordered** recommended lists per user (same length as `relevant`). |
+| **Metrics** | **MAP** (binary relevance), **Precision@K**, **Recall@K**, **NDCG@K**, **Hit Rate@K** for each K in `k_values` (default `(1, 5, 10)`). |
+| **Plots** | Precision@K curve; mean **cumulative gain** vs rank cutoff. |
+| **Insights** | Drop in precision at larger K; long-tail spread in \#relevant per user; low-MAP hint. |
+| **`generate_report`** | `task="recommendation"` / `"ranking"` / `"recommender"` with `y_true=relevant`, `y_pred=ranked`. |
+
 ---
 
 ## Output formats
@@ -211,6 +247,26 @@ pip install build twine
 python -m build
 twine check dist/*
 ```
+
+### CI and PyPI releases
+
+GitHub Actions (`.github/workflows/ci.yml`):
+
+- **Pull requests** → runs **tests** only (Python 3.9–3.11).
+- **Push to `main`** (including when a PR is merged) → runs **tests**, then **publishes** to [PyPI](https://pypi.org/project/model-eval-toolkit/) if tests pass.
+
+**One-time setup**
+
+1. On [pypi.org](https://pypi.org/manage/account/token/), create an **API token** scoped to this project (or your whole account for a first publish).
+2. In the GitHub repo: **Settings → Secrets and variables → Actions → New repository secret**
+   - Name: `PYPI_API_TOKEN`
+   - Value: the token (often starts with `pypi-`).
+
+**Before each release**
+
+- Bump `version` in `pyproject.toml`. PyPI rejects re-uploading the same version.
+
+Optional: use [Trusted Publishing](https://docs.pypi.org/trusted-publishers/) (OIDC) and drop the token; the workflow already requests `id-token: write` for that path.
 
 ---
 
